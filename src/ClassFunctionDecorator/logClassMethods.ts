@@ -1,3 +1,5 @@
+
+// Compile target 需要在 ES2017 之後，不然Async的Method 都會是錯誤的
 type Constructor<T = {}> = new (...args: any[]) => T
 
 async function logAsyncMethodExecution(method: Function, methodName: string, context: any, args: any[]) {
@@ -25,7 +27,7 @@ function logSyncMethodExecution(method: Function, methodName: string, context: a
 }
 
 function isAsyncFunction(method: Function): boolean {
-  return method.toString().trim().startsWith('async');
+  return method.constructor.name === "AsyncFunction";
 }
 
 function wrapMethod (method: Function, methodName: string) {
