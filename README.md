@@ -1,0 +1,2 @@
+# TypescriptDojo
+Test Typescript Function
