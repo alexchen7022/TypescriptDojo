@@ -1,4 +1,4 @@
-import { logClassMethods } from './logClassMethods'
+import { classMethodsDecorator } from './ClassMethodsDecorator'
 
 async function logAsyncMethodExecution (method: Function, methodName: string, context: any, args: any[]): Promise<any> {
   console.log(`Calling ${methodName} with args: ${JSON.stringify(args)}`)
@@ -24,7 +24,7 @@ function logSyncMethodExecution (method: Function, methodName: string, context: 
   }
 }
 
-@logClassMethods(logAsyncMethodExecution, logSyncMethodExecution)
+@classMethodsDecorator(logAsyncMethodExecution, logSyncMethodExecution)
 class TestClass {
   async asyncMethod (a: number, b: number): Promise<number> {
     return a + b

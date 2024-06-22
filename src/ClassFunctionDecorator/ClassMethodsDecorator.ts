@@ -6,17 +6,17 @@ function isAsyncFunction (method: Function): boolean {
   return method.constructor.name === 'AsyncFunction'
 }
 
-function wrapMethod (method: Function, methodName: string, logAsyncMethod: Function, logSyncMethod: Function) {
+function wrapMethod (originalMethod: Function, methodName: string, asyncWrapMethod: Function, syncWrapMethod: Function) {
   return function (this: any, ...args: any[]) {
-    if (isAsyncFunction(method)) {
-      return logAsyncMethod(method, methodName, this, args)
+    if (isAsyncFunction(originalMethod)) {
+      return asyncWrapMethod(originalMethod, methodName, this, args)
     } else {
-      return logSyncMethod(method, methodName, this, args)
+      return syncWrapMethod(originalMethod, methodName, this, args)
     }
   }
 }
 
-export function logClassMethods (logAsyncMethod: Function, logSyncMethod: Function) {
+export function classMethodsDecorator (asyncWrapMethod: Function, syncWrapMethod: Function) {
   return function <T extends Constructor>(Base: T) {
     return class extends Base {
       constructor (...args: any[]) {
@@ -31,7 +31,7 @@ export function logClassMethods (logAsyncMethod: Function, logSyncMethod: Functi
           if (propertyName === 'constructor') return
           const originalMethod = (this as any)[propertyName]
           if (typeof originalMethod === 'function') {
-            (this as any)[propertyName] = wrapMethod(originalMethod, propertyName, logAsyncMethod, logSyncMethod)
+            (this as any)[propertyName] = wrapMethod(originalMethod, propertyName, asyncWrapMethod, syncWrapMethod)
           }
         })
       }

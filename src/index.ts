@@ -1,6 +1,3 @@
-import { logClassMethods } from './ClassFunctionDecorator/logClassMethods'
-
-@logClassMethods
 class ExampleClass {
   sayHello1 (name: string): string {
     return `1.Hello, ${name}!`
