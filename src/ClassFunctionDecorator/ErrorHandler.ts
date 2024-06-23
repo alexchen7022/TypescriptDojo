@@ -1,7 +1,7 @@
 import { Wrapper } from './Wrapper'
 
 class ErrorHandler implements Wrapper {
-  async async (method: Function, methodName: string, context: any, args: any[]): Promise<any> {
+  async asyncHandler (method: Function, methodName: string, context: any, args: any[]): Promise<any> {
     try {
       return await method.apply(context, args)
     } catch (error: unknown) {
@@ -10,7 +10,7 @@ class ErrorHandler implements Wrapper {
     }
   }
 
-  sync (method: Function, methodName: string, context: any, args: any[]): any {
+  syncHandler (method: Function, methodName: string, context: any, args: any[]): any {
     try {
       return method.apply(context, args)
     } catch (error: unknown) {

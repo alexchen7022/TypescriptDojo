@@ -24,7 +24,7 @@ function isAsyncFunction (method: Function): boolean {
  */
 function wrapSyncMethod (originalMethod: Function, sourceName: string, wrapperFunction: Wrapper) {
   return function (this: any, ...args: any[]) {
-    return wrapperFunction.sync(originalMethod, sourceName, this, args)
+    return wrapperFunction.syncHandler(originalMethod, sourceName, this, args)
   }
 }
 
@@ -38,7 +38,7 @@ function wrapSyncMethod (originalMethod: Function, sourceName: string, wrapperFu
  */
 function wrapAsyncMethod (originalMethod: Function, sourceName: string, wrapperFunction: Wrapper) {
   return async function (this: any, ...args: any[]) {
-    return await wrapperFunction.async(originalMethod, sourceName, this, args)
+    return await wrapperFunction.asyncHandler(originalMethod, sourceName, this, args)
   }
 }
 
