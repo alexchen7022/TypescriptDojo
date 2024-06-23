@@ -15,16 +15,16 @@ function isAsyncFunction (method: Function): boolean {
 }
 
 /**
- * Wraps a method, choosing the appropriate wrapper based on whether the method is asynchronous.
+ * Wraps a synchronous method, choosing the appropriate wrapper based on whether the method is asynchronous.
  *
  * @param originalMethod - The original method to wrap
- * @param methodName - The name of the method
+ * @param sourceName - The name of the source class and method
  * @param wrapperFunction - The wrapper function to use
  * @returns The wrapped method
  */
-function wrapSyncMethod (originalMethod: Function, methodName: string, wrapperFunction: Wrapper) {
+function wrapSyncMethod (originalMethod: Function, sourceName: string, wrapperFunction: Wrapper) {
   return function (this: any, ...args: any[]) {
-    return wrapperFunction.sync(originalMethod, methodName, this, args)
+    return wrapperFunction.sync(originalMethod, sourceName, this, args)
   }
 }
 
@@ -32,13 +32,13 @@ function wrapSyncMethod (originalMethod: Function, methodName: string, wrapperFu
  * Wraps an asynchronous method with the appropriate wrapper.
  *
  * @param originalMethod - The original method to wrap
- * @param methodName - The name of the method
+ * @param sourceName - The name of the source class and method
  * @param wrapperFunction - The wrapper function to use
- * @returns The wrapped method
+ * @returns The wrapped asynchronous method
  */
-function wrapAsyncMethod (originalMethod: Function, methodName: string, wrapperFunction: Wrapper) {
+function wrapAsyncMethod (originalMethod: Function, sourceName: string, wrapperFunction: Wrapper) {
   return async function (this: any, ...args: any[]) {
-    return await wrapperFunction.async(originalMethod, methodName, this, args)
+    return await wrapperFunction.async(originalMethod, sourceName, this, args)
   }
 }
 
@@ -50,10 +50,10 @@ function wrapAsyncMethod (originalMethod: Function, methodName: string, wrapperF
  */
 export function classMethodsDecorator (wrapper: Wrapper) {
   return function <T extends Constructor>(Base: T) {
-    return class extends Base {
+    const className = Base.name
+    const DecoratedClass = class extends Base {
       constructor (...args: any[]) {
         super(...args)
-
         // Get all property names of the class,
         // Object.keys for arrow functions,
         // Object.getOwnPropertyNames for standard class functions
@@ -69,13 +69,16 @@ export function classMethodsDecorator (wrapper: Wrapper) {
           if (typeof originalMethod !== 'function') {
             return
           }
+          const sourceName = `<${Base.name}-${propertyName}>`
           if (isAsyncFunction(originalMethod)) {
-            (this as any)[propertyName] = wrapAsyncMethod(originalMethod, propertyName, wrapper)
+            (this as any)[propertyName] = wrapAsyncMethod(originalMethod, sourceName, wrapper)
           } else {
-            (this as any)[propertyName] = wrapSyncMethod(originalMethod, propertyName, wrapper)
+            (this as any)[propertyName] = wrapSyncMethod(originalMethod, sourceName, wrapper)
           }
         })
       }
     }
+    Object.defineProperty(DecoratedClass, 'name', { value: className })
+    return DecoratedClass
   }
 }
