@@ -1,25 +1,23 @@
 import { classMethodsDecorator } from './ClassMethodsDecorator'
-import logger from "./Logger";
-import errorHandler from "./ErrorHandler";
-
+import logger from './Logger'
+import errorHandler from './ErrorHandler'
 
 @classMethodsDecorator(logger)
 @classMethodsDecorator(errorHandler)
 class TestClass {
-
-  async asyncMethod(a: number, b: number): Promise<number> {
+  async asyncMethod (a: number, b: number): Promise<number> {
     return a + b
   }
 
-  syncMethod(a: number, b: number): number {
+  syncMethod (a: number, b: number): number {
     return a * b
   }
 
-  async asyncError(): Promise<number> {
+  async asyncError (): Promise<number> {
     throw new Error('Die async')
   }
 
-  syncError(): number {
+  syncError (): number {
     throw new Error('Die sync')
   }
 
