@@ -1,44 +1,25 @@
 import { classMethodsDecorator } from './ClassMethodsDecorator'
+import logger from "./Logger";
+import errorHandler from "./ErrorHandler";
 
-async function logAsyncMethodExecution (method: Function, methodName: string, context: any, args: any[]): Promise<any> {
-  console.log(`Calling ${methodName} with args: ${JSON.stringify(args)}`)
-  try {
-    const result: any = await method.apply(context, args)
-    console.log(`Result of ${methodName}: ${result}`)
-    return result
-  } catch (error) {
-    console.error(`Error in ${methodName}: ${error}`)
-    throw error
-  }
-}
 
-function logSyncMethodExecution (method: Function, methodName: string, context: any, args: any[]): any {
-  console.log(`Calling ${methodName} with args: ${JSON.stringify(args)}`)
-  try {
-    const result: any = method.apply(context, args)
-    console.log(`Result of ${methodName}: ${result}`)
-    return result
-  } catch (error) {
-    console.error(`Error in ${methodName}: ${error}`)
-    throw error
-  }
-}
-
-@classMethodsDecorator(logAsyncMethodExecution, logSyncMethodExecution)
+@classMethodsDecorator(logger)
+@classMethodsDecorator(errorHandler)
 class TestClass {
-  async asyncMethod (a: number, b: number): Promise<number> {
+
+  async asyncMethod(a: number, b: number): Promise<number> {
     return a + b
   }
 
-  syncMethod (a: number, b: number): number {
+  syncMethod(a: number, b: number): number {
     return a * b
   }
 
-  async asyncError (): Promise<number> {
+  async asyncError(): Promise<number> {
     throw new Error('Die async')
   }
 
-  syncError (): number {
+  syncError(): number {
     throw new Error('Die sync')
   }
 

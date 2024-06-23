@@ -1,3 +1,5 @@
+import {Wrapper} from "./Wrapper";
+
 type Constructor<T = {}> = new (...args: any[]) => T
 
 /**
@@ -9,7 +11,7 @@ type Constructor<T = {}> = new (...args: any[]) => T
  * @returns True if the function is asynchronous, otherwise false
  */
 function isAsyncFunction(method: Function): boolean {
-  return method.constructor.name === 'AsyncFunction'
+    return method.constructor.name === 'AsyncFunction'
 }
 
 /**
@@ -17,50 +19,55 @@ function isAsyncFunction(method: Function): boolean {
  *
  * @param originalMethod - The original method
  * @param methodName - The name of the method
- * @param asyncWrapMethod - The wrapper for asynchronous methods
- * @param syncWrapMethod - The wrapper for synchronous methods
+ * @param wrapperFunction
  * @returns The wrapped method
  */
-function wrapMethod(originalMethod: Function, methodName: string, asyncWrapMethod: Function, syncWrapMethod: Function) {
-  return function (this: any, ...args: any[]) {
-    if (isAsyncFunction(originalMethod)) {
-      return asyncWrapMethod(originalMethod, methodName, this, args)
-    } else {
-      return syncWrapMethod(originalMethod, methodName, this, args)
+function syncWrapMethod(originalMethod: Function, methodName: string, wrapperFunction: Wrapper) {
+    return function (this: any, ...args: any[]) {
+        return wrapperFunction.sync(originalMethod, methodName, this, args)
     }
-  }
+}
+
+function asyncSyncMethod(originalMethod: Function, methodName: string, wrapperFunction: Wrapper) {
+    return async function (this: any, ...args: any[]) {
+        return await wrapperFunction.async(originalMethod, methodName, this, args)
+    }
 }
 
 /**
  * Class methods decorator, used to wrap all methods in a class.
  *
- * @param asyncWrapMethod - The wrapper for asynchronous methods
- * @param syncWrapMethod - The wrapper for synchronous methods
  * @returns The class with wrapped methods
+ * @param wrapperFunction :
  */
-export function classMethodsDecorator(asyncWrapMethod: Function, syncWrapMethod: Function) {
-  return function <T extends Constructor>(Base: T) {
-    return class extends Base {
-      constructor(...args: any[]) {
-        super(...args)
+export function classMethodsDecorator(wrapperFunction: Wrapper) {
+    return function <T extends Constructor>(Base: T) {
+        return class extends Base {
+            constructor(...args: any[]) {
+                super(...args)
 
-        // Get all property names of the class,
-        // Object.keys for arrow function.
-        // Object.getOwnPropertyNames for std class function
-        const propertyNames = [
-          ...Object.keys(this),
-          ...Object.getOwnPropertyNames(Base.prototype)
-        ]
+                // Get all property names of the class,
+                // Object.keys for arrow function.
+                // Object.getOwnPropertyNames for std class function
+                const propertyNames = [
+                    ...Object.keys(this),
+                    ...Object.getOwnPropertyNames(Base.prototype)
+                ]
 
-        // Check and wrap each method
-        propertyNames.forEach(propertyName => {
-          if (propertyName === 'constructor') return
-          const originalMethod = (this as any)[propertyName]
-          if (typeof originalMethod === 'function') {
-            (this as any)[propertyName] = wrapMethod(originalMethod, propertyName, asyncWrapMethod, syncWrapMethod)
-          }
-        })
-      }
+                // Check and wrap each method
+                propertyNames.forEach(propertyName => {
+                    if (propertyName === 'constructor') return
+                    const originalMethod = (this as any)[propertyName]
+                    if (typeof originalMethod !== 'function') {
+                        return
+                    }
+                    if (isAsyncFunction(originalMethod)) {
+                        (this as any)[propertyName] = asyncSyncMethod(originalMethod, propertyName, wrapperFunction)
+                    } else {
+                        (this as any)[propertyName] = syncWrapMethod(originalMethod, propertyName, wrapperFunction)
+                    }
+                })
+            }
+        }
     }
-  }
 }
